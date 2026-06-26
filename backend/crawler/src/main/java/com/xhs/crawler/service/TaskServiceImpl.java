@@ -1,6 +1,7 @@
 package com.xhs.crawler.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xhs.common.exception.BusinessException;
 import com.xhs.crawler.mapper.TaskMapper;
@@ -8,6 +9,8 @@ import com.xhs.crawler.model.dto.TaskCreateRequest;
 import com.xhs.crawler.model.entity.Task;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements TaskService {
@@ -50,5 +53,17 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             throw new BusinessException("任务不存在");
         }
         return task;
+    }
+
+    @Override
+    public List<Task> listTasks(Long userId, int page, int size, String status) {
+        LambdaQueryWrapper<Task> wrapper = new LambdaQueryWrapper<Task>()
+                .eq(Task::getUserId, userId);
+        if (status != null && !status.isEmpty()) {
+            wrapper.eq(Task::getStatus, status);
+        }
+        wrapper.orderByDesc(Task::getId);
+        Page<Task> p = baseMapper.selectPage(new Page<>(page, size), wrapper);
+        return p.getRecords();
     }
 }

@@ -1,3 +1,6 @@
+import { h } from 'vue'
+import { NIcon } from 'naive-ui'
+import { DashboardOutline, KeyOutline, TaskOutline, AnalyticsOutline, SearchOutline } from '@vicons/ionicons5'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
@@ -11,6 +14,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'credential', name: 'Credential', component: () => import('@/views/credential/Index.vue'), meta: { title: '凭据管理' } },
       { path: 'task', name: 'Task', component: () => import('@/views/task/Index.vue'), meta: { title: '任务管理' } },
       { path: 'analysis', name: 'Analysis', component: () => import('@/views/analysis/Index.vue'), meta: { title: '数据分析' } },
+      { path: 'notes', name: 'Notes', component: () => import('@/views/notes/Index.vue'), meta: { title: '笔记浏览' } },
     ],
   },
   {

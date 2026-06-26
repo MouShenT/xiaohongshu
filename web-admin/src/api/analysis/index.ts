@@ -19,6 +19,9 @@ export const taskApi = {
   get(id: number) {
     return http.get(`/task/${id}`)
   },
+  list(params?: { page?: number; size?: number; status?: string }) {
+    return http.get('/task', { params })
+  },
 }
 
 export const hotRadarApi = {
@@ -27,5 +30,23 @@ export const hotRadarApi = {
   },
   analyze(keyword: string) {
     return http.post('/analysis/hot-radar/analyze', { keyword })
+  },
+}
+
+export const articleApi = {
+  analyze(noteId: string) {
+    return http.post('/analysis/article/analyze', { noteId })
+  },
+}
+
+export const noteApi = {
+  search(params: { keyword: string; limit?: number; sort?: string }) {
+    return http.get('/note/search', { params })
+  },
+  detail(noteId: string) {
+    return http.get(`/note/${noteId}`)
+  },
+  comments(noteId: string, limit = 50) {
+    return http.get(`/note/${noteId}/comments`, { params: { limit } })
   },
 }

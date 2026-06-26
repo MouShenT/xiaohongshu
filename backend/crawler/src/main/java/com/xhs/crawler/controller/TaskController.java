@@ -7,6 +7,8 @@ import com.xhs.crawler.service.TaskService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/task")
 public class TaskController {
@@ -27,5 +29,13 @@ public class TaskController {
     public Result<Task> getTask(@AuthenticationPrincipal Long userId,
                                 @PathVariable Long taskId) {
         return Result.success(taskService.getTask(userId, taskId));
+    }
+
+    @GetMapping
+    public Result<List<Task>> listTasks(@AuthenticationPrincipal Long userId,
+                                         @RequestParam(defaultValue = "1") int page,
+                                         @RequestParam(defaultValue = "20") int size,
+                                         @RequestParam(required = false) String status) {
+        return Result.success(taskService.listTasks(userId, page, size, status));
     }
 }
