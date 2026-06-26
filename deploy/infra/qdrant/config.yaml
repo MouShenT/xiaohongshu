@@ -1,0 +1,10 @@
+log_level: INFO
+storage:
+  storage_path: /qdrant/storage
+  optimizers:
+    default_segment_number: 2
+    memmap_threshold_kb: 20000
+service:
+  http_port: 6333
+  grpc_port: 6334
+  max_request_size_mb: 64

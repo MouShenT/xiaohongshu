@@ -1,0 +1,194 @@
+version: "3.9"
+
+networks:
+  xhs-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  redis-data:
+  rabbitmq-data:
+  elasticsearch-data:
+  qdrant-data:
+  minio-data:
+
+services:
+  # ============================================================
+  # MySQL 8 — 主业务数据库
+  # ============================================================
+  mysql:
+    image: mysql:8.0
+    container_name: xhs-mysql
+    restart: unless-stopped
+    networks:
+      - xhs-network
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: xhs_platform
+      MYSQL_USER: xhs_app
+      MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD}
+      TZ: Asia/Shanghai
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --max_connections=300
+      --default-time-zone=+8:00
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================
+  # Redis 7 — 缓存/限流/Token黑名单/任务队列
+  # ============================================================
+  redis:
+    image: redis:7-alpine
+    container_name: xhs-redis
+    restart: unless-stopped
+    networks:
+      - xhs-network
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ============================================================
+  # RabbitMQ 3 — 消息队列
+  # ============================================================
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: xhs-rabbitmq
+    restart: unless-stopped
+    networks:
+      - xhs-network
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: /
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================
+  # Elasticsearch 8 — 全文搜索（Phase 2 启用）
+  # ============================================================
+  elasticsearch:
+    image: elasticsearch:8.12.0
+    container_name: xhs-elasticsearch
+    restart: unless-stopped
+    networks:
+      - xhs-network
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=false
+      - TZ=Asia/Shanghai
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+
+  # ============================================================
+  # Qdrant — 向量数据库（Phase 2 启用）
+  # ============================================================
+  qdrant:
+    image: qdrant/qdrant:v1.9.0
+    container_name: xhs-qdrant
+    restart: unless-stopped
+    networks:
+      - xhs-network
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+      - ./qdrant/config.yaml:/qdrant/config/config.yaml
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: 6334
+      TZ: Asia/Shanghai
+
+  # ============================================================
+  # MinIO — 对象存储（Phase 2 启用）
+  # ============================================================
+  minio:
+    image: minio/minio:latest
+    container_name: xhs-minio
+    restart: unless-stopped
+    networks:
+      - xhs-network
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_REGION: cn-east-1
+      TZ: Asia/Shanghai
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================
+  # Adminer — 数据库管理工具
+  # ============================================================
+  adminer:
+    image: adminer:latest
+    container_name: xhs-adminer
+    restart: unless-stopped
+    networks:
+      - xhs-network
+    ports:
+      - "18080:8080"
+    depends_on:
+      - mysql
+
+  # ============================================================
+  # RedisInsight — Redis 管理工具
+  # ============================================================
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: xhs-redis-insight
+    restart: unless-stopped
+    networks:
+      - xhs-network
+    ports:
+      - "15540:5540"
