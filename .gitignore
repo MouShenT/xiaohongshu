@@ -81,8 +81,10 @@ logs/
 npm-debug.log*
 
 # ====================================
-# Project specific - AI generated docs
+# Project specific - local design docs
 # ====================================
+ARCHITECTURE.md
+
 .claude/settings.local.json
 .claude/projects/
 .claude/worktrees/

@@ -1,10 +1,6 @@
 package com.xhs.dashboard.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.xhs.analysis.mapper.NoteMapper;
-import com.xhs.analysis.mapper.CommentMapper;
-import com.xhs.analysis.model.entity.Note;
-import com.xhs.analysis.model.entity.Comment;
 import com.xhs.crawler.mapper.TaskMapper;
 import com.xhs.crawler.model.entity.Task;
 import com.xhs.publish.mapper.DraftMapper;
@@ -15,24 +11,17 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class DashboardService {
 
-    private final NoteMapper noteMapper;
-    private final CommentMapper commentMapper;
     private final TaskMapper taskMapper;
     private final DraftMapper draftMapper;
     private final StringRedisTemplate redisTemplate;
 
-    public DashboardService(NoteMapper noteMapper,
-                            CommentMapper commentMapper,
-                            TaskMapper taskMapper,
+    public DashboardService(TaskMapper taskMapper,
                             DraftMapper draftMapper,
                             StringRedisTemplate redisTemplate) {
-        this.noteMapper = noteMapper;
-        this.commentMapper = commentMapper;
         this.taskMapper = taskMapper;
         this.draftMapper = draftMapper;
         this.redisTemplate = redisTemplate;
@@ -47,40 +36,36 @@ public class DashboardService {
             } catch (Exception ignored) {}
         }
 
-        // 笔记总数
-        Long noteCount = noteMapper.selectCount(
-                new LambdaQueryWrapper<Note>().eq(Note::getUserId, userId)
-        );
-
-        // 今日采集
         LocalDateTime todayStart = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0);
-        Long todayCollect = noteMapper.selectCount(
-                new LambdaQueryWrapper<Note>()
-                        .eq(Note::getUserId, userId)
-                        .ge(Note::getCreatedAt, todayStart)
-        );
 
-        // 进行中任务
         Long runningTasks = taskMapper.selectCount(
                 new LambdaQueryWrapper<Task>()
                         .eq(Task::getUserId, userId)
                         .in(Task::getStatus, "PENDING", "RUNNING")
         );
 
-        // 待发布草稿
         Long pendingDrafts = draftMapper.selectCount(
                 new LambdaQueryWrapper<Draft>()
                         .eq(Draft::getUserId, userId)
                         .in(Draft::getStatus, "DRAFT", "REVIEWING", "APPROVED", "SCHEDULED")
         );
 
+        Long totalDrafts = draftMapper.selectCount(
+                new LambdaQueryWrapper<Draft>().eq(Draft::getUserId, userId)
+        );
+
+        Long todayTasks = taskMapper.selectCount(
+                new LambdaQueryWrapper<Task>()
+                        .eq(Task::getUserId, userId)
+                        .ge(Task::getCreatedAt, todayStart)
+        );
+
         Map<String, Object> stats = new LinkedHashMap<>();
-        stats.put("noteCount", noteCount);
-        stats.put("todayCollect", todayCollect);
         stats.put("runningTasks", runningTasks);
         stats.put("pendingDrafts", pendingDrafts);
+        stats.put("totalDrafts", totalDrafts);
+        stats.put("todayTasks", todayTasks);
 
-        // 缓存 5 分钟
         try {
             redisTemplate.opsForValue().set(cacheKey,
                     new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(stats),
@@ -126,30 +111,8 @@ public class DashboardService {
         return new ArrayList<>(daily.values());
     }
 
-    public List<Map<String, Object>> getTopNotes(Long userId, int limit) {
-        List<Note> notes = noteMapper.selectList(
-                new LambdaQueryWrapper<Note>()
-                        .eq(Note::getUserId, userId)
-                        .orderByDesc(Note::getLikes)
-                        .last("LIMIT " + limit)
-        );
-
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (Note n : notes) {
-            Map<String, Object> item = new LinkedHashMap<>();
-            item.put("id", n.getId());
-            item.put("noteId", n.getNoteId());
-            item.put("title", n.getTitle());
-            item.put("likes", n.getLikes());
-            item.put("collects", n.getCollects());
-            item.put("comments", n.getCommentsCnt());
-            result.add(item);
-        }
-        return result;
-    }
-
     @SuppressWarnings("unchecked")
-    public Map<String, Object> getTaskDistributions(Long userId) {
+    public Map<String, Object> getDistributions(Long userId) {
         List<Task> tasks = taskMapper.selectList(
                 new LambdaQueryWrapper<Task>().eq(Task::getUserId, userId)
         );

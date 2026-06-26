@@ -1,6 +1,6 @@
 import { h } from 'vue'
 import { NIcon } from 'naive-ui'
-import { DashboardOutline, KeyOutline, TaskOutline, AnalyticsOutline, SearchOutline, PaperPlaneOutline, ChatboxEllipsesOutline } from '@vicons/ionicons5'
+import { DashboardOutline, KeyOutline, TaskOutline, AnalyticsOutline, SearchOutline, PaperPlaneOutline, ChatboxEllipsesOutline, CreateOutline } from '@vicons/ionicons5'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
@@ -17,6 +17,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'notes', name: 'Notes', component: () => import('@/views/notes/Index.vue'), meta: { title: '笔记浏览' } },
       { path: 'publish', name: 'Publish', component: () => import('@/views/publish/Index.vue'), meta: { title: '笔记发布' } },
       { path: 'agent', name: 'Agent', component: () => import('@/views/agent/Index.vue'), meta: { title: 'AI 智能体' } },
+      { path: 'writer', name: 'Writer', component: () => import('@/views/writer/Index.vue'), meta: { title: 'AI 创作' } },
     ],
   },
   {

@@ -23,7 +23,7 @@
 import { h, ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { NIcon } from 'naive-ui'
-import { DashboardOutline, KeyOutline, TaskOutline, AnalyticsOutline, SearchOutline, PaperPlaneOutline, ChatboxEllipsesOutline } from '@vicons/ionicons5'
+import { DashboardOutline, KeyOutline, TaskOutline, AnalyticsOutline, SearchOutline, PaperPlaneOutline, ChatboxEllipsesOutline, CreateOutline } from '@vicons/ionicons5'
 import { useAuthStore } from '@/store/auth'
 
 const router = useRouter()
@@ -43,6 +43,7 @@ const menuOptions = [
   { label: '笔记浏览', key: 'Notes', icon: renderIcon(SearchOutline) },
   { label: '笔记发布', key: 'Publish', icon: renderIcon(PaperPlaneOutline) },
   { label: 'AI 智能体', key: 'Agent', icon: renderIcon(ChatboxEllipsesOutline) },
+  { label: 'AI 创作', key: 'Writer', icon: renderIcon(CreateOutline) },
 ]
 
 const sidebarOptions = computed(() => menuOptions)

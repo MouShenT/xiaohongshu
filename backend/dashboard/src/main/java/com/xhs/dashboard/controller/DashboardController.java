@@ -34,11 +34,11 @@ public class DashboardController {
     public Result<List<Map<String, Object>>> getTopNotes(
             @AuthenticationPrincipal Long userId,
             @RequestParam(defaultValue = "10") int limit) {
-        return Result.success(dashboardService.getTopNotes(userId, limit));
+        return null; // TODO: restore when note mapper is available
     }
 
     @GetMapping("/distributions")
     public Result<Map<String, Object>> getDistributions(@AuthenticationPrincipal Long userId) {
-        return Result.success(dashboardService.getTaskDistributions(userId));
+        return Result.success(dashboardService.getDistributions(userId));
     }
 }

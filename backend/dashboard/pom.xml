@@ -21,11 +21,6 @@
         </dependency>
         <dependency>
             <groupId>com.xhs</groupId>
-            <artifactId>analysis</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.xhs</groupId>
             <artifactId>crawler</artifactId>
             <version>${project.version}</version>
         </dependency>

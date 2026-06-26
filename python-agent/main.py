@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routers import health, xhs_api, agent_chat, agent_pipeline, rag, data_clean, analysis
+from api.routers import health, xhs_api, agent_chat, agent_pipeline, rag, data_clean, analysis, content_writer
 from core.config import settings
 
 app = FastAPI(
@@ -26,6 +26,7 @@ app.include_router(agent_pipeline.router, prefix="/api/v1/pipeline", tags=["运�
 app.include_router(rag.router, prefix="/api/v1/rag", tags=["RAG 知识库"])
 app.include_router(data_clean.router, prefix="/api/v1/data", tags=["数据清洗"])
 app.include_router(analysis.router, prefix="/api/v1/analysis", tags=["数据分析"])
+app.include_router(content_writer.router, prefix="/api/v1/writer", tags=["AI 创作"])
 
 
 @app.get("/health")
