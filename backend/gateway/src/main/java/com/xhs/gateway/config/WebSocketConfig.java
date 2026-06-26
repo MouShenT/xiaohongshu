@@ -1,0 +1,24 @@
+package com.xhs.gateway.config;
+
+import com.xhs.gateway.websocket.TaskLogWebSocketHandler;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+
+@Configuration
+@EnableWebSocket
+public class WebSocketConfig implements WebSocketConfigurer {
+
+    @Override
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        registry.addHandler(taskLogWebSocketHandler(), "/ws/task-log")
+                .setAllowedOrigins("*");
+    }
+
+    @Bean
+    public TaskLogWebSocketHandler taskLogWebSocketHandler() {
+        return new TaskLogWebSocketHandler();
+    }
+}

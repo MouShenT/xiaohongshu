@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: xhs-gateway
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:192.168.229.149}:${MYSQL_PORT:3306}/xhs_platform?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: ${MYSQL_USER:xhs_app}
+    password: ${MYSQL_PASSWORD:xhs_app_2024!}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: ${REDIS_HOST:192.168.229.149}
+      port: ${REDIS_PORT:6379}
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+jwt:
+  secret: xhs-platform-secret-key-2024-spring-boot-3-jwt-hs256
+  expiration: 86400000
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

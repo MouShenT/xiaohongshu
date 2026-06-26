@@ -1,0 +1,10 @@
+server:
+  port: 8086
+spring:
+  application:
+    name: xhs-ai-client
+  rabbitmq:
+    host: ${RABBITMQ_HOST:192.168.229.149}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:xhs_admin}
+    password: ${RABBITMQ_PASSWORD:rabbit123!}
